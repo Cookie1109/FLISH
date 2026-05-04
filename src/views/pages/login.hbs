@@ -1,0 +1,22 @@
+<main class="page auth">
+  <h1>Sign in</h1>
+  <form class="auth-form" data-auth-form data-mode="login">
+    <label class="field">
+      <span>Email</span>
+      <input type="email" name="email" required />
+    </label>
+    <label class="field">
+      <span>Password</span>
+      <input type="password" name="password" required />
+    </label>
+    <button type="submit">Sign in</button>
+  </form>
+  <p class="auth-message" data-auth-message></p>
+  <p class="auth-alt">
+    New here? <a href="/auth/register">Create an account</a>
+  </p>
+</main>
+<script>
+  window.__FIREBASE_CONFIG__ = {{{toJson firebaseConfig}}};
+</script>
+<script type="module" src="/scripts/auth.js"></script>

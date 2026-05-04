@@ -1,0 +1,10 @@
+<main class="page dashboard">
+  <h1>Dashboard</h1>
+  <p data-dashboard-status>Checking session...</p>
+  <pre class="dashboard-user" data-dashboard-user></pre>
+  <button class="btn" data-logout>Sign out</button>
+</main>
+<script>
+  window.__FIREBASE_CONFIG__ = {{{toJson firebaseConfig}}};
+</script>
+<script type="module" src="/scripts/dashboard.js"></script>

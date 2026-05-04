@@ -8,3 +8,55 @@ body {
 .page {
   padding: 40px;
 }
+
+.auth,
+.dashboard {
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.auth-form {
+  display: grid;
+  gap: 16px;
+  margin: 24px 0 12px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.field input {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #d2d0c9;
+  font-size: 14px;
+}
+
+button,
+.btn {
+  padding: 10px 16px;
+  border: 1px solid #1b1b1b;
+  background: #1b1b1b;
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.auth-message {
+  color: #a83030;
+  min-height: 20px;
+}
+
+.auth-alt {
+  font-size: 14px;
+}
+
+.dashboard-user {
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #e4e1d8;
+  margin: 16px 0;
+}
