@@ -1,0 +1,113 @@
+
+<div id="erd" style="padding:4px 0"></div>
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: '"Anthropic Sans", sans-serif',
+  themeVariables: {
+    darkMode: dark,
+    fontSize: '13px',
+    fontFamily: '"Anthropic Sans", sans-serif',
+    lineColor: dark ? '#9c9a92' : '#73726c',
+    textColor: dark ? '#c2c0b6' : '#3d3d3a',
+  },
+});
+const diagram = `erDiagram
+  USERS {
+    uuid id PK
+    string username
+    string email
+    string password_hash
+    string role
+    timestamp created_at
+  }
+  TOPICS {
+    uuid id PK
+    uuid user_id FK
+    string name
+    string description
+    string thumbnail_url
+    boolean is_public
+    timestamp created_at
+  }
+  FLASHCARDS {
+    uuid id PK
+    uuid topic_id FK
+    string word
+    string phonetic
+    string audio_url
+    string image_url
+    string part_of_speech
+    text definition
+    text example_sentence
+    text example_translation
+    int difficulty_level
+    timestamp created_at
+  }
+  QUIZ_SESSIONS {
+    uuid id PK
+    uuid user_id FK
+    uuid topic_id FK
+    int total_cards
+    int correct_count
+    int score
+    timestamp started_at
+    timestamp ended_at
+  }
+  QUIZ_ANSWERS {
+    uuid id PK
+    uuid session_id FK
+    uuid flashcard_id FK
+    string user_answer
+    boolean is_correct
+    int time_taken_ms
+  }
+  LEARNING_PROGRESS {
+    uuid id PK
+    uuid user_id FK
+    uuid flashcard_id FK
+    int view_count
+    int correct_count
+    int incorrect_count
+    string mastery_level
+    timestamp last_reviewed_at
+  }
+  USERS ||--o{ TOPICS : "creates"
+  USERS ||--o{ QUIZ_SESSIONS : "takes"
+  USERS ||--o{ LEARNING_PROGRESS : "tracks"
+  TOPICS ||--o{ FLASHCARDS : "contains"
+  TOPICS ||--o{ QUIZ_SESSIONS : "used in"
+  QUIZ_SESSIONS ||--o{ QUIZ_ANSWERS : "has"
+  FLASHCARDS ||--o{ QUIZ_ANSWERS : "answered in"
+  FLASHCARDS ||--o{ LEARNING_PROGRESS : "tracked by"
+`;
+const { svg } = await mermaid.render('erd-svg', diagram);
+document.getElementById('erd').innerHTML = svg;
+
+document.querySelectorAll('#erd svg .node').forEach(node => {
+  const firstPath = node.querySelector('path[d]');
+  if (!firstPath) return;
+  const d = firstPath.getAttribute('d');
+  const nums = d.match(/-?[\d.]+/g)?.map(Number);
+  if (!nums || nums.length < 8) return;
+  const xs = [nums[0], nums[2], nums[4], nums[6]];
+  const ys = [nums[1], nums[3], nums[5], nums[7]];
+  const x = Math.min(...xs), y = Math.min(...ys);
+  const w = Math.max(...xs) - x, h = Math.max(...ys) - y;
+  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  rect.setAttribute('x', x); rect.setAttribute('y', y);
+  rect.setAttribute('width', w); rect.setAttribute('height', h);
+  rect.setAttribute('rx', '8');
+  for (const a of ['fill', 'stroke', 'stroke-width', 'class', 'style']) {
+    if (firstPath.hasAttribute(a)) rect.setAttribute(a, firstPath.getAttribute(a));
+  }
+  firstPath.replaceWith(rect);
+});
+document.querySelectorAll('#erd svg .row-rect-odd path, #erd svg .row-rect-even path').forEach(p => {
+  p.setAttribute('stroke', 'none');
+});
+</script>

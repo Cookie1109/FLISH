@@ -1,0 +1,44 @@
+---
+
+### Phase 1: Khởi tạo Kiến trúc và Cấu hình Môi trường
+Giai đoạn này giúp bạn xây dựng bộ khung vững chắc cho toàn bộ dự án gồm 3 tầng: Client, Server và Data[cite: 1].
+
+*   Thiết lập cấu trúc thư mục tiêu chuẩn với các phân vùng rõ ràng như `src/config`, `models`, `routes`, `controllers`, `services`, và `views`[cite: 1].
+*   Cấu hình container hóa bằng `docker-compose.yml` và `Dockerfile` để orchestrate toàn bộ hệ thống, giúp bạn dễ dàng khởi chạy database và server ngay trên Docker Desktop của mình[cite: 1].
+*   Thiết lập kết nối cơ sở dữ liệu PostgreSQL thông qua cấu hình của Sequelize (`src/config/database.js`)[cite: 1].
+
+### Phase 2: Xây dựng Cơ sở dữ liệu (Database Design)
+Chuyển đổi sơ đồ thực thể (ERD) thành các models trong mã nguồn.
+
+*   Sử dụng Sequelize migrations để khởi tạo 6 bảng dữ liệu cốt lõi: `User`, `Topic`, `Flashcard`, `QuizSession`, `QuizAnswer`, và `LearningProgress`[cite: 1, 2].
+*   Thiết lập các mối quan hệ (Associations) giữa các bảng: một người dùng (USERS) có thể tạo nhiều chủ đề (TOPICS), mỗi chủ đề chứa nhiều thẻ từ vựng (FLASHCARDS)[cite: 2].
+*   Thiết lập liên kết hệ thống bài tập: người dùng tham gia nhiều phiên kiểm tra (QUIZ_SESSIONS), mỗi phiên có chứa nhiều đáp án (QUIZ_ANSWERS)[cite: 2].
+*   Kết nối hệ thống theo dõi: các thẻ từ vựng (FLASHCARDS) được theo dõi tiến độ bởi bảng LEARNING_PROGRESS của từng người dùng[cite: 2].
+
+### Phase 3: Phát triển API và Route Handlers
+Thiết lập các đường dẫn (endpoints) để xử lý logic điều hướng.
+
+*   **Nhóm Auth:** Xây dựng các route xác thực như trang đăng ký (`GET /auth/register`), xử lý đăng ký (`POST /auth/register`), đăng nhập và hủy session[cite: 3].
+*   **Nhóm Topics:** Xây dựng các route CRUD cho chủ đề (tạo, đọc, sửa, xóa), cùng với route hiển thị danh sách có kèm bộ lọc (`GET /topics`)[cite: 3].
+*   **Nhóm Flashcards:** Thiết lập các route quản lý thẻ từ vựng (`POST /topics/:id/cards`) và cung cấp API AJAX để tra từ điển (`GET /api/lookup/:word`)[cite: 3].
+*   **Nhóm Dashboard & Search:** Xây dựng trang tổng quan hiển thị tiến độ học (`GET /dashboard`) và API tìm kiếm live search (`GET /api/search`)[cite: 3].
+
+### Phase 4: Tích hợp Event-Driven và External APIs (Core Logic)
+Đây là giai đoạn xử lý các tác vụ nặng ngầm bên dưới để trải nghiệm người dùng luôn mượt mà.
+
+*   Sử dụng Node `EventEmitter` (`src/services/event.emitter.js`) để tách biệt các side-effects ra khỏi luồng xử lý chính[cite: 1].
+*   **Tự động hóa dữ liệu:** Khi người dùng nhập từ mới, kích hoạt luồng song song gọi Free Dictionary API (để lấy phiên âm, định nghĩa, ví dụ) và Unsplash API (để lấy ảnh minh họa)[cite: 1]. Sau đó, gọi MyMemory API để dịch câu ví dụ và lưu toàn bộ vào PostgreSQL trong một transaction duy nhất[cite: 1].
+*   **Xử lý sự kiện ngầm:** Lắng nghe event `card.viewed` để cập nhật bảng `learning_progress` hoặc event `quiz.completed` để tính điểm mà không làm chậm thời gian phản hồi (response) chính của server[cite: 1].
+
+### Phase 5: Xây dựng Giao diện (Client-Side)
+Hoàn thiện phần tương tác trực quan cho người dùng.
+
+*   Xây dựng giao diện bằng Handlebars theo cấu trúc `layouts`, `partials`, và `pages`[cite: 1].
+*   Phát triển các màn hình học tập tương tác: trang chế độ lật thẻ (`GET /topics/:id/study`) và trang bắt đầu bài kiểm tra quiz (`GET /topics/:id/quiz`)[cite: 3].
+*   Tích hợp Web Speech API ở tầng Client để phát âm từ vựng trực tiếp trên trình duyệt của người dùng[cite: 1].
+
+### Phase 6: Hoàn thiện & Orchestration
+*   Kiểm tra sự liên kết mượt mà của cả 3 tầng (Client, Server, Data)[cite: 1].
+*   Chạy lệnh orchestrate bằng Docker compose để đảm bảo mọi container (Node.js app, PostgreSQL) hoạt động thống nhất[cite: 1].
+
+---

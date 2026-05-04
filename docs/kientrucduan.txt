@@ -1,0 +1,66 @@
+
+---
+
+## Kiến trúc tổng thể
+
+Dự án được chia thành 3 tầng chính: **Client** (Handlebars + Web Speech API), **Server** (Express + Route Handler + Event-driven), và **Data** (PostgreSQL + Sequelize). Docker compose sẽ orchestrate toàn bộ.
+---
+
+
+## Cấu trúc thư mục dự án
+
+```
+flashcard-english/
+├── src/
+│   ├── config/
+│   │   ├── database.js        # Sequelize config
+│   │   └── passport.js        # Auth strategy
+│   ├── models/
+│   │   ├── User.js
+│   │   ├── Topic.js
+│   │   ├── Flashcard.js
+│   │   ├── QuizSession.js
+│   │   ├── QuizAnswer.js
+│   │   └── LearningProgress.js
+│   ├── routes/
+│   │   ├── auth.routes.js
+│   │   ├── topic.routes.js
+│   │   ├── card.routes.js
+│   │   ├── quiz.routes.js
+│   │   └── api.routes.js      # AJAX endpoints
+│   ├── controllers/
+│   │   ├── auth.controller.js
+│   │   ├── topic.controller.js
+│   │   ├── card.controller.js
+│   │   └── quiz.controller.js
+│   ├── services/
+│   │   ├── dictionary.service.js   # Free Dictionary API
+│   │   ├── image.service.js        # Unsplash API
+│   │   ├── translation.service.js  # MyMemory API
+│   │   └── event.emitter.js        # Node EventEmitter
+│   ├── middleware/
+│   │   ├── auth.middleware.js
+│   │   └── errorHandler.js
+│   └── views/                 # Handlebars
+│       ├── layouts/
+│       ├── partials/
+│       └── pages/
+├── public/                    # Static assets
+├── migrations/                # Sequelize migrations
+├── docker-compose.yml
+├── Dockerfile
+└── .env
+```
+
+---
+
+## Event-driven Pattern
+
+Node `EventEmitter` được dùng để **tách biệt side-effects** khỏi business logic — ví dụ khi user xem một card, server emit event `card.viewed`, một listener riêng sẽ cập nhật bảng `learning_progress` mà không làm chậm response chính. Tương tự với `quiz.completed` để tính điểm và `card.created` để log audit.
+
+## Luồng tạo Flashcard
+
+Khi user nhập một từ mới, server sẽ song song gọi **Free Dictionary API** (lấy phonetic + definition + câu ví dụ) và **Unsplash API** (lấy hình ảnh minh họa), sau đó gọi **MyMemory API** để dịch câu ví dụ sang tiếng Việt. Toàn bộ dữ liệu được lưu vào PostgreSQL trong một transaction.
+
+---
+
