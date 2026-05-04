@@ -1,0 +1,28 @@
+<main class="page">
+  <header class="page-header">
+    <div>
+      <h1>Topics</h1>
+      <p class="muted">Manage your personal flashcard topics.</p>
+    </div>
+    <a class="btn" href="/topics/new">New topic</a>
+  </header>
+
+  {{#if topics.length}}
+    <ul class="list">
+      {{#each topics}}
+        <li class="list-item">
+          <div>
+            <h3>{{this.name}}</h3>
+            <p class="muted">{{this.description}}</p>
+          </div>
+          <div class="list-actions">
+            <a href="/topics/{{this.id}}">Open</a>
+            <a href="/topics/{{this.id}}/edit">Edit</a>
+          </div>
+        </li>
+      {{/each}}
+    </ul>
+  {{else}}
+    <p>No topics yet. Create your first topic.</p>
+  {{/if}}
+</main>

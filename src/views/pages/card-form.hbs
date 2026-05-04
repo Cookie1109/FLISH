@@ -1,0 +1,50 @@
+<main class="page">
+  <h1>{{title}}</h1>
+  {{#if error}}
+    <p class="form-error">{{error}}</p>
+  {{/if}}
+  <form class="form" method="post" action="{{action}}" data-card-form>
+    <label class="field">
+      <span>Word</span>
+      <div class="field-inline">
+        <input type="text" name="word" value="{{card.word}}" required />
+        <button type="button" class="btn ghost" data-lookup>Auto-fill</button>
+      </div>
+    </label>
+    <p class="form-hint" data-lookup-message></p>
+    <label class="field">
+      <span>Phonetic</span>
+      <input type="text" name="phonetic" value="{{card.phonetic}}" />
+    </label>
+    <label class="field">
+      <span>Audio URL</span>
+      <input type="text" name="audioUrl" value="{{card.audioUrl}}" />
+    </label>
+    <label class="field">
+      <span>Part of speech</span>
+      <input type="text" name="partOfSpeech" value="{{card.partOfSpeech}}" />
+    </label>
+    <label class="field">
+      <span>Definition</span>
+      <textarea name="definition" rows="3">{{card.definition}}</textarea>
+    </label>
+    <label class="field">
+      <span>Example sentence</span>
+      <textarea name="exampleSentence" rows="3">{{card.exampleSentence}}</textarea>
+    </label>
+    <label class="field">
+      <span>Example translation</span>
+      <textarea name="exampleTranslation" rows="3">{{card.exampleTranslation}}</textarea>
+    </label>
+    <label class="field">
+      <span>Image URL</span>
+      <input type="text" name="imageUrl" value="{{card.imageUrl}}" />
+    </label>
+    <label class="field">
+      <span>Difficulty level</span>
+      <input type="number" name="difficultyLevel" value="{{card.difficultyLevel}}" min="1" max="5" />
+    </label>
+    <button type="submit">{{submitLabel}}</button>
+  </form>
+</main>
+<script type="module" src="/scripts/card-form.js"></script>

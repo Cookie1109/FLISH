@@ -37,6 +37,11 @@ if (!config.apiKey || !config.authDomain || !config.appId) {
 
       const token = await credential.user.getIdToken();
       localStorage.setItem("flish_id_token", token);
+      await fetch("/auth/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
       window.location.href = "/dashboard";
     } catch (error) {
       showMessage(error.message || "Authentication failed");

@@ -4,7 +4,10 @@ async function authMiddleware(req, res, next) {
   try {
     const header = req.headers.authorization || "";
     const match = header.match(/^Bearer\s+(.+)$/i);
-    const token = match ? match[1] : req.headers["x-firebase-token"];
+    const token =
+      match?.[1] ||
+      req.headers["x-firebase-token"] ||
+      req.cookies?.firebase_token;
 
     if (!token) {
       if (req.accepts("html")) {

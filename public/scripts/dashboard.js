@@ -51,6 +51,7 @@ if (!config.apiKey || !config.authDomain || !config.appId) {
   if (logoutBtn) {
     logoutBtn.addEventListener("click", async () => {
       await signOut(auth);
+      await fetch("/auth/logout", { method: "POST" });
       localStorage.removeItem("flish_id_token");
       window.location.href = "/auth/login";
     });

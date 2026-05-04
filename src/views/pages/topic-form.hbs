@@ -1,0 +1,25 @@
+<main class="page">
+  <h1>{{title}}</h1>
+  {{#if error}}
+    <p class="form-error">{{error}}</p>
+  {{/if}}
+  <form class="form" method="post" action="{{action}}">
+    <label class="field">
+      <span>Name</span>
+      <input type="text" name="name" value="{{topic.name}}" required />
+    </label>
+    <label class="field">
+      <span>Description</span>
+      <textarea name="description" rows="3">{{topic.description}}</textarea>
+    </label>
+    <label class="field">
+      <span>Thumbnail URL</span>
+      <input type="text" name="thumbnailUrl" value="{{topic.thumbnailUrl}}" />
+    </label>
+    <label class="field checkbox">
+      <input type="checkbox" name="isPublic" {{#if topic.isPublic}}checked{{/if}} />
+      <span>Public topic</span>
+    </label>
+    <button type="submit">{{submitLabel}}</button>
+  </form>
+</main>

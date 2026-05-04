@@ -1,0 +1,42 @@
+<main class="page">
+  <header class="page-header">
+    <div>
+      <h1>{{topic.name}}</h1>
+      <p class="muted">{{topic.description}}</p>
+    </div>
+    <div class="list-actions">
+      <a href="/topics/{{topic.id}}/edit">Edit topic</a>
+      <form method="post" action="/topics/{{topic.id}}/delete">
+        <button type="submit" class="btn danger">Delete</button>
+      </form>
+    </div>
+  </header>
+
+  <section class="section">
+    <div class="section-header">
+      <h2>Flashcards</h2>
+      <a class="btn" href="/topics/{{topic.id}}/cards/new">New card</a>
+    </div>
+
+    {{#if flashcards.length}}
+      <ul class="list">
+        {{#each flashcards}}
+          <li class="list-item">
+            <div>
+              <h3>{{this.word}}</h3>
+              <p class="muted">{{this.definition}}</p>
+            </div>
+            <div class="list-actions">
+              <a href="/cards/{{this.id}}/edit">Edit</a>
+              <form method="post" action="/cards/{{this.id}}/delete">
+                <button type="submit" class="btn ghost">Delete</button>
+              </form>
+            </div>
+          </li>
+        {{/each}}
+      </ul>
+    {{else}}
+      <p>No flashcards yet. Add your first card.</p>
+    {{/if}}
+  </section>
+</main>
