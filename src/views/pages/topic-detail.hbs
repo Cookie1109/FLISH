@@ -27,6 +27,9 @@
               <p class="muted">{{this.definition}}</p>
             </div>
             <div class="list-actions">
+              <button type="button" class="btn ghost" data-view-card="{{this.id}}">
+                Mark viewed
+              </button>
               <a href="/cards/{{this.id}}/edit">Edit</a>
               <form method="post" action="/cards/{{this.id}}/delete">
                 <button type="submit" class="btn ghost">Delete</button>
@@ -40,3 +43,4 @@
     {{/if}}
   </section>
 </main>
+<script type="module" src="/scripts/topic-detail.js"></script>

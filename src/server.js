@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const app = require("./app");
 const db = require("./config/database");
+require("./services/event.listeners");
 
 const port = process.env.PORT || 3000;
 
