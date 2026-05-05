@@ -1,15 +1,15 @@
 const { LearningProgress, QuizAnswer } = require("../models");
 
 function deriveMastery(progress) {
-  if (progress.correctCount >= 5 && progress.incorrectCount <= 1) {
+  if (progress.correctCount >= 3 && progress.incorrectCount <= 1) {
     return "mastered";
   }
 
-  if (progress.correctCount >= 3 && progress.correctCount > progress.incorrectCount) {
+  if (progress.correctCount >= 1 && progress.correctCount >= progress.incorrectCount) {
     return "learning";
   }
 
-  if (progress.incorrectCount >= progress.correctCount + 2) {
+  if (progress.incorrectCount > progress.correctCount) {
     return "struggling";
   }
 

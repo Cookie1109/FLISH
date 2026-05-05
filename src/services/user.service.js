@@ -1,4 +1,5 @@
 const { User } = require("../models");
+const { seedUserTopics } = require("./seed.service");
 
 function deriveUsername(firebaseUser, email) {
   if (firebaseUser?.name) return firebaseUser.name;
@@ -21,6 +22,9 @@ async function getOrCreateUser(firebaseUser) {
       passwordHash: null,
       role: "user",
     });
+    
+    // Auto-seed 3 sample topics for new users (run asynchronously in background)
+    seedUserTopics(user.id).catch(console.error);
   }
 
   return user;

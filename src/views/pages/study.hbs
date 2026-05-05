@@ -1,42 +1,217 @@
-<main class="page study">
-  <header class="page-header">
+<style>
+  body { background: #f9fafb; }
+
+  .fc-wrapper { perspective: 1200px; }
+  .fc-inner {
+    position: relative;
+    min-height: 420px;
+    transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+    cursor: pointer;
+  }
+  .fc-inner.flipped { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 1.25rem;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,.07);
+  }
+  .fc-face-back { transform: rotateY(180deg); display: flex; flex-direction: column; }
+
+  /* Slide-in animation for card change */
+  @keyframes slide-in {
+    from { opacity: 0; transform: translateX(24px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  .card-animate { animation: slide-in 0.22s ease-out both; }
+  @keyframes fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-in { animation: fade-in 0.3s ease-out both; }
+</style>
+
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+  <!-- Header -->
+  <div class="flex items-center gap-3">
+    <a href="/" class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i>
+    </a>
     <div>
-      <h1>Study · {{topic.name}}</h1>
-      <p class="muted">Learn at your own pace. Flip the card to reveal details.</p>
+      <h1 class="font-bold text-gray-900">{{topic.name}}</h1>
+      <p class="text-xs text-gray-400 mt-0.5">{{totalCount}} từ vựng</p>
     </div>
-    <div class="study-meta">
-      <span class="badge" data-study-progress></span>
-      <span class="badge">Learned: {{learnedCount}} / {{totalCount}}</span>
-      <span class="badge" data-study-status></span>
-    </div>
-  </header>
+  </div>
 
-  {{#if totalCount}}
-    <section class="study-card" data-study-card>
-      <div class="study-card-inner">
-        <div class="study-face study-front">
-          <h2 data-study-word></h2>
-          <p class="muted">Tap flip to see definition.</p>
-        </div>
-        <div class="study-face study-back">
-          <p class="study-definition" data-study-detail></p>
-          <p class="study-example" data-study-example></p>
-        </div>
+  <!-- Progress bar -->
+  <div class="bg-white border border-gray-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+    <div class="flex-1 space-y-2">
+      <div class="flex items-center justify-between text-sm">
+        <span class="text-gray-700 font-medium" id="progress-label">0/{{totalCount}} từ đã thuộc</span>
+        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600" id="progress-pct">0%</span>
       </div>
-    </section>
-
-    <div class="study-actions">
-      <button type="button" class="btn ghost" data-study-flip>Flip</button>
-      <button type="button" class="btn" data-study-known>Know it</button>
-      <button type="button" class="btn danger" data-study-unknown>Still learning</button>
-      <button type="button" class="btn ghost" data-study-next>Next</button>
+      <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div id="progress-bar" class="h-full rounded-full transition-all duration-500" style="width:0%;background:#111827"></div>
+      </div>
+      <div class="flex gap-4 text-xs text-gray-400">
+        <span class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full inline-block" id="dot-learned" style="background:#111827"></span>
+          <span id="learned-count">0</span> đã thuộc
+        </span>
+        <span class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-gray-200 inline-block"></span>
+          <span id="unlearned-count">{{totalCount}}</span> chưa thuộc
+        </span>
+      </div>
     </div>
-  {{else}}
-    <p>No flashcards available. Add cards to start studying.</p>
-  {{/if}}
-</main>
+    <button id="btn-reset" style="display:none" class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg px-3 py-2 hover:border-gray-400 transition-colors whitespace-nowrap">
+      <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Đặt lại tất cả
+    </button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex border-b border-gray-200 overflow-x-auto">
+    <button class="tab-btn active-tab flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 border-gray-900 text-gray-900 font-medium -mb-px" data-tab="learn">
+      <i data-lucide="credit-card" class="w-3.5 h-3.5"></i> Học
+    </button>
+    <button class="tab-btn flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 border-transparent text-gray-400 hover:text-gray-700 -mb-px transition-colors" data-tab="all">
+      <i data-lucide="list" class="w-3.5 h-3.5"></i>
+      <span id="tab-all-label">Tất cả ({{totalCount}})</span>
+    </button>
+    <button class="tab-btn flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 border-transparent text-gray-400 hover:text-gray-700 -mb-px transition-colors" data-tab="learned">
+      <i data-lucide="check" class="w-3.5 h-3.5"></i>
+      <span id="tab-learned-label">Đã thuộc (0)</span>
+    </button>
+    <button class="tab-btn flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 border-transparent text-gray-400 hover:text-gray-700 -mb-px transition-colors" data-tab="unlearned">
+      <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+      <span id="tab-unlearned-label">Chưa thuộc ({{totalCount}})</span>
+    </button>
+  </div>
+
+  <!-- ── TAB LEARN ── -->
+  <div id="tab-learn">
+    {{#if totalCount}}
+
+    <!-- Session done -->
+    <div id="session-done" style="display:none" class="bg-white border border-gray-200 rounded-xl p-8 text-center max-w-sm mx-auto space-y-4 fade-in">
+      <i data-lucide="trophy" class="w-10 h-10 mx-auto text-amber-400"></i>
+      <div>
+        <h2 class="font-bold text-gray-900 text-lg" id="done-title">Xong lượt này!</h2>
+        <p class="text-gray-500 text-sm mt-1" id="done-desc"></p>
+      </div>
+      <div class="space-y-2 pt-2">
+        <button id="btn-continue-unlearned" style="display:none" class="w-full py-2.5 rounded-lg text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 transition-colors">Tiếp tục học từ chưa thuộc</button>
+        <button id="btn-review-learned"     style="display:none" class="w-full py-2.5 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">Ôn lại từ đã thuộc</button>
+        <button id="btn-restart-done"                            class="w-full py-2.5 rounded-lg text-sm text-gray-400 hover:text-gray-700 transition-colors">Đặt lại và học lại từ đầu</button>
+      </div>
+    </div>
+
+    <!-- Flashcard area -->
+    <div id="flashcard-area">
+      <p class="text-center text-sm text-gray-400 mb-4">
+        Còn <strong class="text-gray-700" id="queue-remaining">0</strong> từ trong lượt này
+      </p>
+
+      <div class="w-full max-w-lg mx-auto fc-wrapper select-none" id="card-wrap">
+        <div class="fc-inner card-animate" id="flip-inner" onclick="flipCard()">
+
+          <!-- FRONT -->
+          <div class="fc-face">
+            <div id="card-image" class="overflow-hidden bg-gray-100" style="height:192px">
+              <img id="card-img-el" src="" alt="" class="w-full h-full object-cover" style="display:none" />
+            </div>
+            <div class="p-6">
+              <div class="flex items-start gap-3">
+                <div class="flex-1">
+                  <p class="text-xs text-gray-400 uppercase tracking-widest mb-1" id="front-pos"></p>
+                  <h2 class="text-3xl font-bold text-gray-900 tracking-tight" id="front-word"></h2>
+                  <p class="mt-1 text-base font-mono text-gray-400" id="front-phonetic"></p>
+                </div>
+                <button type="button" onclick="event.stopPropagation();speakWord()"
+                  class="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors shrink-0 mt-1">
+                  <i data-lucide="volume-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+              <div class="mt-5 pt-4 border-t border-gray-100 flex items-center justify-center gap-2 text-gray-400 text-sm">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                Nhấn để xem nghĩa
+              </div>
+            </div>
+          </div>
+
+          <!-- BACK -->
+          <div class="fc-face fc-face-back">
+            <div class="flex-1 p-6 space-y-4 overflow-auto">
+              <div class="flex items-start gap-3">
+                <div class="flex-1">
+                  <p class="text-xs text-gray-400 uppercase tracking-widest mb-1" id="back-pos"></p>
+                  <h2 class="text-2xl font-bold text-gray-900" id="back-word"></h2>
+                  <p class="text-sm font-mono text-gray-400" id="back-phonetic"></p>
+                </div>
+                <button type="button" onclick="event.stopPropagation();speakWord()"
+                  class="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors shrink-0">
+                  <i data-lucide="volume-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+
+              <!-- Meaning box with accent color -->
+              <div id="meaning-box" class="rounded-xl px-4 py-3">
+                <p class="text-xs text-gray-500 uppercase tracking-widest mb-1">Nghĩa tiếng Việt</p>
+                <p class="text-xl font-bold" id="back-definition"></p>
+              </div>
+
+              <div class="space-y-2">
+                <div id="example-wrap">
+                  <p class="text-xs text-gray-400 uppercase tracking-widest mb-1">Câu ví dụ</p>
+                  <p class="text-sm text-gray-700 leading-relaxed italic" id="back-example"></p>
+                </div>
+                <div id="translation-wrap">
+                  <p class="text-xs text-gray-400 uppercase tracking-widest mb-1">Dịch nghĩa</p>
+                  <p class="text-sm text-gray-500 leading-relaxed" id="back-translation"></p>
+                </div>
+                <button type="button" onclick="event.stopPropagation();speakExample()"
+                  class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors pt-1">
+                  <i data-lucide="volume-2" class="w-3.5 h-3.5"></i>
+                  Nghe câu ví dụ
+                </button>
+              </div>
+            </div>
+
+            <!-- Know/Again buttons -->
+            <div class="grid grid-cols-2 border-t border-gray-100" onclick="event.stopPropagation()">
+              <button type="button" onclick="handleAgain()"
+                class="flex items-center justify-center gap-2 py-4 text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors border-r border-gray-100">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Chưa thuộc
+              </button>
+              <button type="button" onclick="handleKnow()" id="btn-know"
+                class="flex items-center justify-center gap-2 py-4 text-sm font-medium transition-colors hover:opacity-90">
+                <i data-lucide="check" class="w-4 h-4"></i> Đã thuộc
+              </button>
+            </div>
+          </div>
+
+        </div><!-- /fc-inner -->
+      </div><!-- /fc-wrapper -->
+    </div><!-- /flashcard-area -->
+
+    {{else}}
+    <p class="text-center text-gray-500 py-10">Chưa có thẻ nào. <a href="/topics/{{topic.id}}/cards/new" class="text-gray-900 underline">Thêm thẻ đầu tiên</a>.</p>
+    {{/if}}
+  </div><!-- /tab-learn -->
+
+  <!-- ── TAB LIST ── -->
+  <div id="tab-list" style="display:none" class="space-y-3">
+    <div id="list-action-bar"></div>
+    <div id="word-list" class="space-y-1.5"></div>
+  </div>
+
+</div>
 
 <script>
   window.__STUDY_DATA__ = {{{toJson studyData}}};
+  window.__ACCENT_COLOR__ = "{{topic.accentColor}}";
 </script>
 <script type="module" src="/scripts/study.js"></script>

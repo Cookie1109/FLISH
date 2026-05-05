@@ -99,6 +99,9 @@ async function createCard(req, res, next) {
     const dictionaryData = await safeLookup(word);
     const imageUrl = await safeImage(word);
 
+    // Định nghĩa = bản dịch tiếng Việt của từ (ưu tiên) hoặc định nghĩa tiếng Anh từ dictionary
+    const viTranslation = await safeTranslate(word);
+
     const exampleSentence =
       nullIfEmpty(req.body.exampleSentence) ||
       dictionaryData?.exampleSentence ||
@@ -119,7 +122,10 @@ async function createCard(req, res, next) {
         dictionaryData?.partOfSpeech ||
         null,
       definition:
-        nullIfEmpty(req.body.definition) || dictionaryData?.definition || null,
+        nullIfEmpty(req.body.definition) ||
+        viTranslation ||
+        dictionaryData?.definition ||
+        null,
       exampleSentence,
       exampleTranslation,
       difficultyLevel: parseDifficulty(req.body.difficultyLevel),

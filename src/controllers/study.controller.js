@@ -1,4 +1,5 @@
 const { Flashcard, LearningProgress, Topic } = require("../models");
+const { getTopicAccent } = require("../services/theme.service");
 
 function mapProgress(rows) {
   const map = new Map();
@@ -57,9 +58,11 @@ async function showStudy(req, res, next) {
 
     const learnedCount = cards.filter((card) => isLearned(card.masteryLevel)).length;
 
+    const accent = getTopicAccent(topic);
+
     return res.render("pages/study", {
       title: `Study · ${topic.name}`,
-      topic,
+      topic: { ...topic.get(), accentColor: accent.color },
       totalCount: cards.length,
       learnedCount,
       studyData: {

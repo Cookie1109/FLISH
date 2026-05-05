@@ -1,9 +1,94 @@
-<main class="page dashboard">
-  <h1>Dashboard</h1>
-  <p data-dashboard-status>Checking session...</p>
-  <pre class="dashboard-user" data-dashboard-user></pre>
-  <button class="btn" data-logout>Sign out</button>
-</main>
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-8">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="font-bold text-gray-900 text-2xl">Dashboard</h1>
+      <p class="text-gray-500 text-sm mt-1">Theo dõi tiến trình học của bạn.</p>
+    </div>
+    <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors" data-logout>Đăng xuất</button>
+  </div>
+
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <span class="text-xs text-gray-400 uppercase tracking-widest font-medium">Chủ đề</span>
+      <p class="text-2xl font-bold mt-1 text-gray-900">{{stats.topicCount}}</p>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <span class="text-xs text-gray-400 uppercase tracking-widest font-medium">Tổng số thẻ</span>
+      <p class="text-2xl font-bold mt-1 text-gray-900">{{stats.totalCards}}</p>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <span class="text-xs text-gray-400 uppercase tracking-widest font-medium">Đã thuộc</span>
+      <p class="text-2xl font-bold mt-1 text-green-600">{{stats.learnedCount}}</p>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <span class="text-xs text-gray-400 uppercase tracking-widest font-medium">Chưa thuộc</span>
+      <p class="text-2xl font-bold mt-1 text-red-500">{{stats.unlearnedCount}}</p>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <span class="text-xs text-gray-400 uppercase tracking-widest font-medium">Cần ôn tập</span>
+      <p class="text-2xl font-bold mt-1 text-amber-500">{{stats.reviewCount}}</p>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <span class="text-xs text-gray-400 uppercase tracking-widest font-medium">Số lần Quiz</span>
+      <p class="text-2xl font-bold mt-1 text-gray-900">{{stats.totalSessions}}</p>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <span class="text-xs text-gray-400 uppercase tracking-widest font-medium">Điểm TB</span>
+      <p class="text-2xl font-bold mt-1 text-gray-900">{{stats.avgScore}}%</p>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <span class="text-xs text-gray-400 uppercase tracking-widest font-medium">Độ chính xác</span>
+      <p class="text-2xl font-bold mt-1 text-gray-900">{{stats.accuracy}}%</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="space-y-4">
+      <div class="flex items-center justify-between border-b border-gray-200 pb-2">
+        <h2 class="font-semibold text-gray-800">Cần ôn tập ngay</h2>
+        <a href="/search" class="text-sm text-gray-500 hover:text-gray-900">Xem tất cả</a>
+      </div>
+      {{#if reviewList.length}}
+        <div class="space-y-2">
+          {{#each reviewList}}
+            <div class="bg-white border border-gray-200 rounded-xl p-3 flex justify-between items-center">
+              <div>
+                <h3 class="font-medium text-gray-900 text-sm">{{this.word}}</h3>
+                <p class="text-xs text-gray-500">{{this.definition}}</p>
+              </div>
+              <a href="/topics/{{this.topicId}}/study?card={{this.id}}" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition-colors">Ôn lại</a>
+            </div>
+          {{/each}}
+        </div>
+      {{else}}
+        <p class="text-sm text-gray-500">Không có thẻ nào cần ôn tập lúc này.</p>
+      {{/if}}
+    </div>
+    
+    <div class="space-y-4">
+      <div class="flex items-center justify-between border-b border-gray-200 pb-2">
+        <h2 class="font-semibold text-gray-800">Mới học gần đây</h2>
+      </div>
+      {{#if learnedList.length}}
+        <div class="space-y-2">
+          {{#each learnedList}}
+            <div class="bg-white border border-gray-200 rounded-xl p-3 flex justify-between items-center">
+              <div>
+                <h3 class="font-medium text-gray-900 text-sm">{{this.word}}</h3>
+                <p class="text-xs text-gray-500">{{this.topicName}}</p>
+              </div>
+              <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">{{this.masteryLevel}}</span>
+            </div>
+          {{/each}}
+        </div>
+      {{else}}
+        <p class="text-sm text-gray-500">Chưa có thẻ nào.</p>
+      {{/if}}
+    </div>
+  </div>
+  
+  <p class="text-xs text-gray-400 hidden" data-dashboard-status></p>
+</div>
 <script>
   window.__FIREBASE_CONFIG__ = {{{toJson firebaseConfig}}};
 </script>

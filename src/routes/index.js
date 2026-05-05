@@ -6,6 +6,10 @@ const cardRoutes = require("./card.routes");
 const quizRoutes = require("./quiz.routes");
 const authMiddleware = require("../middleware/auth.middleware");
 const attachDbUser = require("../middleware/attachDbUser");
+const searchController = require("../controllers/search.controller");
+const dashboardController = require("../controllers/dashboard.controller");
+const homeController = require("../controllers/home.controller");
+const optionalAuth = require("../middleware/optionalAuth");
 
 const router = express.Router();
 
@@ -15,13 +19,16 @@ router.use("/topics", topicRoutes);
 router.use("/cards", cardRoutes);
 router.use("/", quizRoutes);
 
-router.get("/", (req, res) => {
-  res.render("pages/home", { title: "FLISH" });
-});
+router.get("/", optionalAuth, attachDbUser, homeController.showHome);
 
-router.get("/dashboard", authMiddleware, attachDbUser, (req, res) => {
-  res.render("pages/dashboard", { title: "Dashboard" });
-});
+router.get(
+  "/dashboard",
+  authMiddleware,
+  attachDbUser,
+  dashboardController.showDashboard
+);
+
+router.get("/search", authMiddleware, attachDbUser, searchController.showSearch);
 
 router.get("/health", (req, res) => {
   res.json({ status: "ok" });

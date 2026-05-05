@@ -1,12 +1,45 @@
 <!doctype html>
-<html lang="en">
+<html lang="vi">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{{title}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles/main.css" />
+    <script src="https://unpkg.com/lucide@latest"></script>
   </head>
-  <body>
-    {{{body}}}
+  <body class="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
+    {{> nav }}
+    <main class="flex-1 w-full">
+      {{{body}}}
+    </main>
+    {{> footer }}
+    {{> session-refresh }}
+    <script>
+      lucide.createIcons();
+      
+      // Highlight active nav link
+      const currentPath = window.location.pathname;
+      document.querySelectorAll('nav a').forEach(link => {
+        const href = link.getAttribute('href');
+        if (href === currentPath || (href !== '/' && currentPath.startsWith(href))) {
+          // If it's the exact path or a subpath (but not for home /)
+          link.classList.add('font-bold', 'text-gray-900', 'bg-gray-50');
+          link.classList.remove('text-gray-500');
+        }
+      });
+    </script>
   </body>
 </html>

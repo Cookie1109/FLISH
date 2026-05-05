@@ -1,48 +1,271 @@
-<main class="page">
-  <header class="page-header">
-    <div>
-      <h1>{{topic.name}}</h1>
-      <p class="muted">{{topic.description}}</p>
+<style>
+  body { background: #f9fafb; }
+  .fc-wrapper { perspective: 1200px; }
+  .fc-inner {
+    position: relative;
+    min-height: 420px;
+    transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+    cursor: pointer;
+  }
+  .fc-inner.flipped { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 1.25rem;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,.07);
+  }
+  .fc-face-back { transform: rotateY(180deg); display: flex; flex-direction: column; }
+  @keyframes slide-in {
+    from { opacity: 0; transform: translateX(24px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  .card-animate { animation: slide-in 0.22s ease-out both; }
+  @keyframes fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-in { animation: fade-in 0.3s ease-out both; }
+  details summary { list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+</style>
+
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+  <!-- Header -->
+  <div class="flex items-center gap-3 justify-between flex-wrap">
+    <div class="flex items-center gap-3">
+      <a href="/" class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      </a>
+      <div>
+        <h1 class="font-bold text-gray-900 text-xl">{{topic.name}}</h1>
+        <p class="text-xs text-gray-400 mt-0.5">{{totalCount}} từ vựng · {{topic.description}}</p>
+      </div>
     </div>
-    <div class="list-actions">
-      <a class="btn ghost" href="/topics/{{topic.id}}/study">Study</a>
-      <a class="btn" href="/topics/{{topic.id}}/quiz">Start quiz</a>
-      <a href="/topics/{{topic.id}}/edit">Edit topic</a>
-      <form method="post" action="/topics/{{topic.id}}/delete">
-        <button type="submit" class="btn danger">Delete</button>
+    <div class="flex items-center gap-2 flex-wrap">
+      <a href="/topics/{{topic.id}}/cards/new"
+        class="flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+        <i data-lucide="plus" class="w-4 h-4"></i> Thêm thẻ
+      </a>
+      <a href="/topics/{{topic.id}}/quiz"
+        class="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+        Làm Quiz
+      </a>
+    </div>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="bg-white border border-gray-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+    <div class="flex-1 space-y-2">
+      <div class="flex items-center justify-between text-sm">
+        <span class="text-gray-700 font-medium" id="progress-label">{{learnedCount}}/{{totalCount}} từ đã thuộc</span>
+        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600" id="progress-pct">{{learnedPercent}}%</span>
+      </div>
+      <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div id="progress-bar" class="h-full rounded-full transition-all duration-500"
+          style="width:{{learnedPercent}}%; background:{{topic.accentColor}}"></div>
+      </div>
+      <div class="flex gap-4 text-xs text-gray-400">
+        <span class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full inline-block" style="background:{{topic.accentColor}}"></span>
+          <span id="learned-count">{{learnedCount}}</span> đã thuộc
+        </span>
+        <span class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-gray-200 inline-block"></span>
+          <span id="unlearned-count">{{unlearned-count}}</span> chưa thuộc
+        </span>
+      </div>
+    </div>
+    <div class="flex gap-2">
+      <button id="btn-reset" style="display:none"
+        class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg px-3 py-2 hover:border-gray-400 transition-colors whitespace-nowrap">
+        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Đặt lại
+      </button>
+      <a href="/topics/{{topic.id}}/edit"
+        class="text-xs text-gray-500 hover:text-gray-900 border border-gray-200 rounded-lg px-3 py-1.5 transition-colors">Sửa chủ đề</a>
+      <form method="post" action="/topics/{{topic.id}}/delete" style="margin:0">
+        <button type="submit" class="text-xs text-red-500 hover:text-red-700 border border-red-200 rounded-lg px-3 py-1.5 hover:bg-red-50 transition-colors">Xóa</button>
       </form>
     </div>
-  </header>
+  </div>
 
-  <section class="section">
-    <div class="section-header">
-      <h2>Flashcards</h2>
-      <a class="btn" href="/topics/{{topic.id}}/cards/new">New card</a>
+  <!-- Tabs -->
+  <div class="flex border-b border-gray-200 overflow-x-auto">
+    <button class="tab-btn active-tab flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 border-gray-900 text-gray-900 font-medium -mb-px" data-tab="learn">
+      <i data-lucide="credit-card" class="w-3.5 h-3.5"></i> Học
+    </button>
+    <button class="tab-btn flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 border-transparent text-gray-400 hover:text-gray-700 -mb-px transition-colors" data-tab="all">
+      <i data-lucide="list" class="w-3.5 h-3.5"></i>
+      <span id="tab-all-label">Tất cả ({{totalCount}})</span>
+    </button>
+    <button class="tab-btn flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 border-transparent text-gray-400 hover:text-gray-700 -mb-px transition-colors" data-tab="learned">
+      <i data-lucide="check" class="w-3.5 h-3.5"></i>
+      <span id="tab-learned-label">Đã thuộc ({{learnedCount}})</span>
+    </button>
+    <button class="tab-btn flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 border-transparent text-gray-400 hover:text-gray-700 -mb-px transition-colors" data-tab="unlearned">
+      <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+      <span id="tab-unlearned-label">Chưa thuộc</span>
+    </button>
+  </div>
+
+  <!-- ── TAB LEARN ── -->
+  <div id="tab-learn">
+    {{#if totalCount}}
+
+    <!-- Session done -->
+    <div id="session-done" style="display:none"
+      class="bg-white border border-gray-200 rounded-xl p-8 text-center max-w-sm mx-auto space-y-4 fade-in">
+      <i data-lucide="trophy" class="w-10 h-10 mx-auto text-amber-400"></i>
+      <div>
+        <h2 class="font-bold text-gray-900 text-lg" id="done-title">Xong lượt này!</h2>
+        <p class="text-gray-500 text-sm mt-1" id="done-desc"></p>
+      </div>
+      <div class="space-y-2 pt-2">
+        <button id="btn-continue-unlearned" style="display:none"
+          class="w-full py-2.5 rounded-lg text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 transition-colors"></button>
+        <button id="btn-review-learned" style="display:none"
+          class="w-full py-2.5 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"></button>
+        <button id="btn-restart-done"
+          class="w-full py-2.5 rounded-lg text-sm text-gray-400 hover:text-gray-700 transition-colors">Đặt lại và học lại từ đầu</button>
+      </div>
     </div>
 
-    {{#if flashcards.length}}
-      <ul class="list">
-        {{#each flashcards}}
-          <li class="list-item">
-            <div>
-              <h3>{{this.word}}</h3>
-              <p class="muted">{{this.definition}}</p>
+    <!-- Flashcard -->
+    <div id="flashcard-area">
+      <p class="text-center text-sm text-gray-400 mb-4">
+        Còn <strong class="text-gray-700" id="queue-remaining">0</strong> từ trong lượt này
+      </p>
+
+      <div class="w-full max-w-lg mx-auto fc-wrapper select-none">
+        <div id="card-anim-wrap" class="card-animate">
+          <div class="fc-inner" id="flip-inner" onclick="flipCard()">
+
+            <!-- FRONT -->
+            <div class="fc-face">
+            <div id="card-image" class="overflow-hidden bg-gray-100" style="height:192px">
+              <img id="card-img-el" src="" alt="" class="w-full h-full object-cover" style="display:none" />
             </div>
-            <div class="list-actions">
-              <button type="button" class="btn ghost" data-view-card="{{this.id}}">
-                Mark viewed
+            <div class="p-6">
+              <div class="flex items-start gap-3">
+                <div class="flex-1">
+                  <p class="text-xs text-gray-400 uppercase tracking-widest mb-1" id="front-pos"></p>
+                  <h2 class="text-3xl font-bold text-gray-900 tracking-tight" id="front-word"></h2>
+                  <p class="mt-1 text-base font-mono text-gray-400" id="front-phonetic"></p>
+                </div>
+                <button type="button" onclick="event.stopPropagation();speakWord()"
+                  class="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors shrink-0 mt-1">
+                  <i data-lucide="volume-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+              <div class="mt-5 pt-4 border-t border-gray-100 flex items-center justify-center gap-2 text-gray-400 text-sm">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                Nhấn để xem nghĩa
+              </div>
+            </div>
+          </div>
+
+          <!-- BACK -->
+          <div class="fc-face fc-face-back">
+            <div class="flex-1 p-6 space-y-4 overflow-auto">
+              <div class="flex items-start gap-3">
+                <div class="flex-1">
+                  <p class="text-xs text-gray-400 uppercase tracking-widest mb-1" id="back-pos"></p>
+                  <h2 class="text-2xl font-bold text-gray-900" id="back-word"></h2>
+                  <p class="text-sm font-mono text-gray-400" id="back-phonetic"></p>
+                </div>
+                <button type="button" onclick="event.stopPropagation();speakWord()"
+                  class="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors shrink-0">
+                  <i data-lucide="volume-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+              <div id="meaning-box" class="rounded-xl px-4 py-3 relative group/edit cursor-pointer transition-colors" onclick="event.stopPropagation(); editCurrentCard()">
+                <div class="flex items-center justify-between mb-1">
+                  <p class="text-xs text-gray-500 uppercase tracking-widest">Nghĩa</p>
+                  <i data-lucide="edit-3" class="w-4 h-4 text-gray-400 opacity-50 group-hover/edit:opacity-100 transition-opacity" title="Chỉnh sửa nghĩa"></i>
+                </div>
+                <p class="text-xl font-bold" id="back-definition"></p>
+              </div>
+              <div class="space-y-2">
+                <div id="example-wrap">
+                  <p class="text-xs text-gray-400 uppercase tracking-widest mb-1">Câu ví dụ</p>
+                  <p class="text-sm text-gray-700 leading-relaxed italic" id="back-example"></p>
+                </div>
+                <div id="translation-wrap">
+                  <p class="text-xs text-gray-400 uppercase tracking-widest mb-1">Dịch nghĩa</p>
+                  <p class="text-sm text-gray-500 leading-relaxed" id="back-translation"></p>
+                </div>
+                <button type="button" id="btn-speak-example" onclick="event.stopPropagation();speakExample()"
+                  class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors pt-1">
+                  <i data-lucide="volume-2" class="w-3.5 h-3.5"></i> Nghe câu ví dụ
+                </button>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 border-t border-gray-100" onclick="event.stopPropagation()">
+              <button type="button" onclick="handleAgain()"
+                class="flex items-center justify-center gap-2 py-4 text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors border-r border-gray-100">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Chưa thuộc
               </button>
-              <a href="/cards/{{this.id}}/edit">Edit</a>
-              <form method="post" action="/cards/{{this.id}}/delete">
-                <button type="submit" class="btn ghost">Delete</button>
-              </form>
+              <button type="button" onclick="handleKnow()" id="btn-know"
+                class="flex items-center justify-center gap-2 py-4 text-sm font-medium transition-colors hover:opacity-90">
+                <i data-lucide="check" class="w-4 h-4"></i> Đã thuộc
+              </button>
             </div>
-          </li>
-        {{/each}}
-      </ul>
+          </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
     {{else}}
-      <p>No flashcards yet. Add your first card.</p>
+    <div class="text-center py-12 space-y-3">
+      <i data-lucide="layers" class="w-10 h-10 mx-auto text-gray-300"></i>
+      <p class="text-gray-500 text-sm">Chưa có thẻ nào.</p>
+      <a href="/topics/{{topic.id}}/cards/new"
+        class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
+        <i data-lucide="plus" class="w-4 h-4"></i> Thêm thẻ đầu tiên
+      </a>
+    </div>
     {{/if}}
-  </section>
-</main>
+  </div>
+
+  <!-- ── TAB LIST ── -->
+  <div id="tab-list" style="display:none" class="space-y-3">
+    <div id="list-action-bar"></div>
+    <div id="word-list" class="space-y-1.5"></div>
+  </div>
+
+</div>
+
+  <!-- EDIT MODAL -->
+  <div id="edit-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-200" id="edit-modal-content">
+      <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+        <h3 class="font-bold text-gray-900 text-lg">Sửa nghĩa của từ</h3>
+        <button type="button" onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="p-6">
+        <input type="text" id="edit-modal-input" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:bg-white transition-colors" placeholder="Nhập nghĩa mới..." />
+      </div>
+      <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+        <button type="button" onclick="closeEditModal()" class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">Hủy</button>
+        <button type="button" id="btn-save-edit" class="px-5 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors flex items-center gap-2">Lưu</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  window.__TOPIC_DATA__ = {
+    accentColor: "{{topic.accentColor}}",
+    topicId: "{{topic.id}}",
+    totalCount: {{totalCount}},
+    learnedCount: {{learnedCount}},
+  };
+  window.__CARD_DATA__ = {{{toJson flashcards}}};
+</script>
 <script type="module" src="/scripts/topic-detail.js"></script>

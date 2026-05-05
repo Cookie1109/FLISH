@@ -16,10 +16,23 @@ async function lookupDictionary(word) {
   const phonetic =
     entry.phonetic || entry.phonetics?.find((p) => p.text)?.text || null;
   const audioUrl = entry.phonetics?.find((p) => p.audio)?.audio || null;
+  
   const meaning = entry.meanings?.[0];
   const definition = meaning?.definitions?.[0]?.definition || null;
-  const exampleSentence = meaning?.definitions?.[0]?.example || null;
   const partOfSpeech = meaning?.partOfSpeech || null;
+
+  let exampleSentence = null;
+  if (entry.meanings) {
+    for (const m of entry.meanings) {
+      if (m.definitions) {
+        const defWithExample = m.definitions.find(d => d.example);
+        if (defWithExample) {
+          exampleSentence = defWithExample.example;
+          break;
+        }
+      }
+    }
+  }
 
   return {
     phonetic,

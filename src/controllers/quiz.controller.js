@@ -31,6 +31,7 @@ async function startQuiz(req, res, next) {
         topic,
         session: null,
         cards: [],
+        quizData: { sessionId: null, cards: [] },
         message: "No flashcards available for this topic.",
       });
     }
@@ -207,11 +208,13 @@ async function showResult(req, res, next) {
       });
     }
 
+    const plainSession = session.get({ plain: true });
+
     return res.render("pages/quiz-result", {
       title: "Quiz result",
-      session,
-      topic: session.topic,
-      answers: session.answers || [],
+      session: plainSession,
+      topic: plainSession.topic,
+      answers: plainSession.answers || [],
       answeredCount,
       correctCount,
       score,

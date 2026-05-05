@@ -1,28 +1,42 @@
-<main class="page">
-  <header class="page-header">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-6">
+  <div class="flex items-center justify-between">
     <div>
-      <h1>Topics</h1>
-      <p class="muted">Manage your personal flashcard topics.</p>
+      <h1 class="font-bold text-gray-900" style="font-size: 1.5rem;">Chủ đề</h1>
+      <p class="text-gray-500 text-sm mt-1">Chọn chủ đề để bắt đầu học với Flash Card</p>
     </div>
-    <a class="btn" href="/topics/new">New topic</a>
-  </header>
+    <a href="/topics/new" class="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">Tạo chủ đề mới</a>
+  </div>
 
   {{#if topics.length}}
-    <ul class="list">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {{#each topics}}
-        <li class="list-item">
-          <div>
-            <h3>{{this.name}}</h3>
-            <p class="muted">{{this.description}}</p>
+        <a href="/topics/{{this.id}}" class="group block h-full">
+          <div class="bg-white border border-gray-200 rounded-xl p-5 hover:border-gray-400 hover:shadow-sm transition-all h-full flex flex-col">
+            <div class="flex items-start justify-between mb-4">
+              <span class="text-2xl">{{this.initial}}</span>
+              <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300 group-hover:text-gray-600 transition-colors"></i>
+            </div>
+            <h3 class="font-semibold text-gray-900">{{this.name}}</h3>
+            <p class="text-sm text-gray-500 mt-2 line-clamp-2">{{this.description}}</p>
+
+            <div class="mt-auto pt-5 space-y-1.5">
+              <div class="flex items-center justify-between text-xs text-gray-400">
+                <span>{{this.learnedCount}}/{{this.totalCount}} từ</span>
+                {{#if this.learnedCount}}
+                  <span>{{this.progressPercent}}%</span>
+                {{else}}
+                  <span>Chưa bắt đầu</span>
+                {{/if}}
+              </div>
+              <div class="h-1 bg-gray-100 rounded-full overflow-hidden">
+                <div class="h-full rounded-full transition-all" style="width: {{this.progressPercent}}%; background-color: {{this.accentColor}};"></div>
+              </div>
+            </div>
           </div>
-          <div class="list-actions">
-            <a href="/topics/{{this.id}}">Open</a>
-            <a href="/topics/{{this.id}}/edit">Edit</a>
-          </div>
-        </li>
+        </a>
       {{/each}}
-    </ul>
+    </div>
   {{else}}
-    <p>No topics yet. Create your first topic.</p>
+    <p class="text-sm text-gray-500 py-4 text-center border border-dashed border-gray-300 rounded-xl mt-6">Chưa có chủ đề nào. Hãy tạo chủ đề đầu tiên.</p>
   {{/if}}
-</main>
+</div>

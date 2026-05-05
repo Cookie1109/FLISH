@@ -19,6 +19,7 @@ app.engine(
     partialsDir: path.join(__dirname, "views", "partials"),
     helpers: {
       toJson: (value) => JSON.stringify(value),
+      eq: (a, b) => a === b,
     },
   })
 );

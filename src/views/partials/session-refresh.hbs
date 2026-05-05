@@ -1,0 +1,31 @@
+{{#if firebaseConfig.apiKey}}
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  const config = {{{toJson firebaseConfig}}};
+  if (config.apiKey && config.authDomain && config.appId) {
+    const app = initializeApp(config, "session-refresher");
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          // getIdToken() auto-refreshes if needed (token expires every ~55 min)
+          const token = await user.getIdToken(false);
+          localStorage.setItem("flish_id_token", token);
+          // Re-sync cookie in case it expired
+          await fetch("/auth/session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token }),
+          });
+        } catch (e) {
+          // User signed out on Firebase side — clear local state
+          localStorage.removeItem("flish_id_token");
+        }
+      }
+    });
+  }
+</script>
+{{/if}}

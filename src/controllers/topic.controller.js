@@ -1,4 +1,15 @@
-const { Topic, Flashcard } = require("../models");
+const { Op } = require("sequelize");
+const { Topic, Flashcard, LearningProgress } = require("../models");
+const { getTopicStats } = require("../services/topic-stats.service");
+const { getTopicAccent, getTopicInitial } = require("../services/theme.service");
+
+const PAGE_SIZE = 20;
+
+function toPositiveInt(value, fallback) {
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return parsed;
+}
 
 function normalizeTopicPayload(body) {
   const name = body.name?.trim() || "";
@@ -17,12 +28,9 @@ async function getTopicForUser(userId, topicId) {
 
 async function listTopics(req, res, next) {
   try {
-    const topics = await Topic.findAll({
-      where: { userId: req.dbUser.id },
-      order: [["createdAt", "DESC"]],
-    });
+    const topics = await getTopicStats(req.dbUser.id);
 
-    res.render("pages/topics", {
+    return res.render("pages/topics", {
       title: "Topics",
       topics,
     });
@@ -73,8 +81,6 @@ async function showTopic(req, res, next) {
   try {
     const topic = await Topic.findOne({
       where: { id: req.params.id, userId: req.dbUser.id },
-      include: [{ model: Flashcard, as: "flashcards" }],
-      order: [[{ model: Flashcard, as: "flashcards" }, "createdAt", "DESC"]],
     });
 
     if (!topic) {
@@ -83,10 +89,88 @@ async function showTopic(req, res, next) {
       throw err;
     }
 
+    const totalCount = await Flashcard.count({
+      where: { topicId: topic.id },
+    });
+
+    const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+    const currentPage = Math.min(
+      toPositiveInt(req.query.page, 1),
+      totalPages
+    );
+    const offset = (currentPage - 1) * PAGE_SIZE;
+
+    const flashcards = await Flashcard.findAll({
+      where: { topicId: topic.id },
+      order: [["createdAt", "DESC"]],
+    });
+
+    const flashcardIds = flashcards.map((card) => card.id);
+    const progressRows = flashcardIds.length
+      ? await LearningProgress.findAll({
+          where: {
+            userId: req.dbUser.id,
+            flashcardId: flashcardIds,
+          },
+        })
+      : [];
+
+    const progressMap = new Map(
+      progressRows.map((row) => [row.flashcardId, row])
+    );
+
+    const flashcardData = flashcards.map((card) => {
+      const level = progressMap.get(card.id)?.masteryLevel || "new";
+      return {
+        ...card.get(),
+        masteryLevel: level,
+        isMastered: level === "mastered",
+      };
+    });
+
+    const learnedCount = await LearningProgress.count({
+      where: {
+        userId: req.dbUser.id,
+        masteryLevel: { [Op.in]: ["learning", "mastered"] },
+      },
+      include: [
+        {
+          model: Flashcard,
+          as: "flashcard",
+          attributes: [],
+          where: { topicId: topic.id },
+        },
+      ],
+      distinct: true,
+    });
+
+    const learnedPercent = totalCount
+      ? Math.round((learnedCount / totalCount) * 100)
+      : 0;
+
     res.render("pages/topic-detail", {
       title: topic.name,
-      topic,
-      flashcards: topic.flashcards || [],
+      topic: {
+        ...topic.get(),
+        accentColor: getTopicAccent(topic).color,
+        accentText: getTopicAccent(topic).text,
+        initial: getTopicInitial(topic),
+      },
+      flashcards: flashcardData,
+      totalCount,
+      learnedCount,
+      learnedPercent,
+      pagination: {
+        currentPage,
+        totalPages,
+        totalCount,
+        perPage: PAGE_SIZE,
+        hasPrev: currentPage > 1,
+        hasNext: currentPage < totalPages,
+        prevPage: currentPage - 1,
+        nextPage: currentPage + 1,
+        show: totalPages > 1,
+      },
     });
   } catch (error) {
     next(error);

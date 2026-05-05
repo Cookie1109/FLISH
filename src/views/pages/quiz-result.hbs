@@ -1,35 +1,63 @@
-<main class="page quiz">
-  <header class="page-header">
+<div class="max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-6">
+  <div class="flex items-center justify-between">
     <div>
-      <h1>Quiz result</h1>
-      <p class="muted">{{topic.name}}</p>
+      <h1 class="font-bold text-gray-900 text-2xl">Kết quả Quiz</h1>
+      <p class="text-gray-500 text-sm mt-1">{{topic.name}}</p>
     </div>
-    <span class="badge">Score: {{score}}%</span>
-  </header>
+    <span class="text-xl font-bold text-green-600 bg-green-50 px-4 py-2 rounded-xl">Điểm: {{score}}%</span>
+  </div>
 
-  <section class="section">
-    <p>Answered: {{answeredCount}} / {{session.totalCards}}</p>
-    <p>Correct: {{correctCount}}</p>
-  </section>
+  <div class="bg-white border border-gray-200 rounded-2xl p-6 flex items-center justify-around text-center">
+    <div>
+      <p class="text-xs text-gray-400 uppercase tracking-widest font-medium mb-1">Đã trả lời</p>
+      <p class="text-2xl font-bold text-gray-900">{{answeredCount}} <span class="text-lg text-gray-400">/ {{session.totalCards}}</span></p>
+    </div>
+    <div>
+      <p class="text-xs text-gray-400 uppercase tracking-widest font-medium mb-1">Chính xác</p>
+      <p class="text-2xl font-bold text-green-600">{{correctCount}}</p>
+    </div>
+  </div>
 
-  <section class="section">
-    <h2>Answers</h2>
+  <div class="space-y-4">
+    <div class="flex items-center justify-between">
+      <h2 class="font-semibold text-gray-800">Chi tiết câu trả lời</h2>
+      <a href="/topics/{{topic.id}}" class="text-sm text-gray-500 hover:text-gray-900 bg-gray-100 px-3 py-1.5 rounded-lg">Về chủ đề</a>
+    </div>
     {{#if answers.length}}
-      <ul class="list">
+      <div class="space-y-2">
         {{#each answers}}
-          <li class="list-item">
+          <div class="bg-white border border-gray-200 rounded-xl p-4 flex justify-between items-center">
             <div>
-              <h3>{{this.flashcard.word}}</h3>
-              <p class="muted">Your answer: {{this.userAnswer}}</p>
+              <p class="text-xs text-gray-400 font-medium mb-1 line-clamp-1">{{this.flashcard.definition}}</p>
+              <h3 class="font-bold text-gray-900 text-lg">{{this.flashcard.word}}</h3>
+              <p class="text-sm text-gray-500 mt-1">
+                Câu trả lời của bạn: 
+                {{#if this.userAnswer}}
+                  <span class="font-semibold {{#if this.isCorrect}}text-green-600{{else}}text-red-500 line-through{{/if}}">{{this.userAnswer}}</span>
+                {{else}}
+                  <span class="font-medium text-gray-400 italic">(Bỏ trống)</span>
+                {{/if}}
+              </p>
             </div>
-            <span class="badge {{#if this.isCorrect}}badge-success{{else}}badge-warn{{/if}}">
-              {{#if this.isCorrect}}Correct{{else}}Incorrect{{/if}}
-            </span>
-          </li>
+            {{#if this.isCorrect}}
+              <span class="w-8 h-8 flex items-center justify-center rounded-full bg-green-50 text-green-600"><i data-lucide="check" class="w-4 h-4"></i></span>
+            {{else}}
+              <span class="w-8 h-8 flex items-center justify-center rounded-full bg-red-50 text-red-500"><i data-lucide="x" class="w-4 h-4"></i></span>
+            {{/if}}
+          </div>
         {{/each}}
-      </ul>
+      </div>
     {{else}}
-      <p>No answers recorded.</p>
+      <p class="text-gray-500 text-sm">Chưa có câu trả lời nào.</p>
     {{/if}}
-  </section>
-</main>
+
+    <div class="pt-8 border-t border-gray-100 flex flex-col sm:flex-row gap-3">
+      <a href="/topics/{{topic.id}}/quiz" class="flex-1 flex items-center justify-center gap-2 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors">
+        <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Làm lại Quiz
+      </a>
+      <a href="/" class="flex-1 flex items-center justify-center gap-2 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Quay về Dashboard
+      </a>
+    </div>
+  </div>
+</div>
