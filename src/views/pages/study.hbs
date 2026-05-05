@@ -1,0 +1,42 @@
+<main class="page study">
+  <header class="page-header">
+    <div>
+      <h1>Study · {{topic.name}}</h1>
+      <p class="muted">Learn at your own pace. Flip the card to reveal details.</p>
+    </div>
+    <div class="study-meta">
+      <span class="badge" data-study-progress></span>
+      <span class="badge">Learned: {{learnedCount}} / {{totalCount}}</span>
+      <span class="badge" data-study-status></span>
+    </div>
+  </header>
+
+  {{#if totalCount}}
+    <section class="study-card" data-study-card>
+      <div class="study-card-inner">
+        <div class="study-face study-front">
+          <h2 data-study-word></h2>
+          <p class="muted">Tap flip to see definition.</p>
+        </div>
+        <div class="study-face study-back">
+          <p class="study-definition" data-study-detail></p>
+          <p class="study-example" data-study-example></p>
+        </div>
+      </div>
+    </section>
+
+    <div class="study-actions">
+      <button type="button" class="btn ghost" data-study-flip>Flip</button>
+      <button type="button" class="btn" data-study-known>Know it</button>
+      <button type="button" class="btn danger" data-study-unknown>Still learning</button>
+      <button type="button" class="btn ghost" data-study-next>Next</button>
+    </div>
+  {{else}}
+    <p>No flashcards available. Add cards to start studying.</p>
+  {{/if}}
+</main>
+
+<script>
+  window.__STUDY_DATA__ = {{{toJson studyData}}};
+</script>
+<script type="module" src="/scripts/study.js"></script>

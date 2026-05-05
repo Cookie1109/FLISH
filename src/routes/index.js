@@ -3,6 +3,7 @@ const authRoutes = require("./auth.routes");
 const apiRoutes = require("./api.routes");
 const topicRoutes = require("./topic.routes");
 const cardRoutes = require("./card.routes");
+const quizRoutes = require("./quiz.routes");
 const authMiddleware = require("../middleware/auth.middleware");
 const attachDbUser = require("../middleware/attachDbUser");
 
@@ -12,6 +13,7 @@ router.use("/auth", authRoutes);
 router.use("/api", apiRoutes);
 router.use("/topics", topicRoutes);
 router.use("/cards", cardRoutes);
+router.use("/", quizRoutes);
 
 router.get("/", (req, res) => {
   res.render("pages/home", { title: "FLISH" });

@@ -1,4 +1,4 @@
-const { LearningProgress } = require("../models");
+const { LearningProgress, QuizAnswer } = require("../models");
 
 function deriveMastery(progress) {
   if (progress.correctCount >= 5 && progress.incorrectCount <= 1) {
@@ -57,10 +57,25 @@ async function handleCardViewed({ userId, flashcardId }) {
   await updateProgress({ userId, flashcardId, viewed: true });
 }
 
-async function handleQuizCompleted({ userId, answers }) {
-  if (!userId || !Array.isArray(answers)) return;
+async function handleQuizCompleted({ userId, answers, sessionId }) {
+  if (!userId) return;
 
-  for (const answer of answers) {
+  let normalizedAnswers = Array.isArray(answers) ? answers : null;
+
+  if (!normalizedAnswers && sessionId) {
+    const rows = await QuizAnswer.findAll({
+      where: { sessionId },
+      attributes: ["flashcardId", "isCorrect"],
+    });
+    normalizedAnswers = rows.map((row) => ({
+      flashcardId: row.flashcardId,
+      isCorrect: row.isCorrect,
+    }));
+  }
+
+  if (!Array.isArray(normalizedAnswers)) return;
+
+  for (const answer of normalizedAnswers) {
     if (!answer?.flashcardId) continue;
     const isCorrect = Boolean(answer.isCorrect);
     await updateProgress({

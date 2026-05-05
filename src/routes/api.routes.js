@@ -19,6 +19,40 @@ router.get("/me", (req, res) => {
   });
 });
 
+router.post("/study/flashcards/:id/answer", async (req, res, next) => {
+  try {
+    const flashcard = await Flashcard.findOne({
+      where: { id: req.params.id },
+      include: [{ model: Topic, as: "topic", where: { userId: req.dbUser.id } }],
+    });
+
+    if (!flashcard) {
+      return res.status(404).json({ error: "Flashcard not found" });
+    }
+
+    const isCorrect = Boolean(req.body?.isCorrect);
+
+    emitAsync(EVENTS.CARD_VIEWED, {
+      userId: req.dbUser.id,
+      flashcardId: flashcard.id,
+    });
+
+    emitAsync(EVENTS.QUIZ_COMPLETED, {
+      userId: req.dbUser.id,
+      answers: [
+        {
+          flashcardId: flashcard.id,
+          isCorrect,
+        },
+      ],
+    });
+
+    return res.status(202).json({ status: "accepted" });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 router.post("/flashcards/:id/view", async (req, res, next) => {
   try {
     const flashcard = await Flashcard.findOne({

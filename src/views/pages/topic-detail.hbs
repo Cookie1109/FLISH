@@ -5,6 +5,8 @@
       <p class="muted">{{topic.description}}</p>
     </div>
     <div class="list-actions">
+      <a class="btn ghost" href="/topics/{{topic.id}}/study">Study</a>
+      <a class="btn" href="/topics/{{topic.id}}/quiz">Start quiz</a>
       <a href="/topics/{{topic.id}}/edit">Edit topic</a>
       <form method="post" action="/topics/{{topic.id}}/delete">
         <button type="submit" class="btn danger">Delete</button>

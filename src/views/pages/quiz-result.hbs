@@ -1,0 +1,35 @@
+<main class="page quiz">
+  <header class="page-header">
+    <div>
+      <h1>Quiz result</h1>
+      <p class="muted">{{topic.name}}</p>
+    </div>
+    <span class="badge">Score: {{score}}%</span>
+  </header>
+
+  <section class="section">
+    <p>Answered: {{answeredCount}} / {{session.totalCards}}</p>
+    <p>Correct: {{correctCount}}</p>
+  </section>
+
+  <section class="section">
+    <h2>Answers</h2>
+    {{#if answers.length}}
+      <ul class="list">
+        {{#each answers}}
+          <li class="list-item">
+            <div>
+              <h3>{{this.flashcard.word}}</h3>
+              <p class="muted">Your answer: {{this.userAnswer}}</p>
+            </div>
+            <span class="badge {{#if this.isCorrect}}badge-success{{else}}badge-warn{{/if}}">
+              {{#if this.isCorrect}}Correct{{else}}Incorrect{{/if}}
+            </span>
+          </li>
+        {{/each}}
+      </ul>
+    {{else}}
+      <p>No answers recorded.</p>
+    {{/if}}
+  </section>
+</main>

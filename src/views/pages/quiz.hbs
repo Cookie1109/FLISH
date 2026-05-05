@@ -1,0 +1,36 @@
+<main class="page quiz">
+  <header class="page-header">
+    <div>
+      <h1>Quiz · {{topic.name}}</h1>
+      <p class="muted">Answer the word that matches the definition.</p>
+    </div>
+    <span class="badge" data-quiz-progress></span>
+  </header>
+
+  {{#if message}}
+    <p>{{message}}</p>
+  {{else}}
+    <section class="quiz-card">
+      <h2 data-quiz-word></h2>
+      <p class="quiz-definition" data-quiz-definition></p>
+      <p class="quiz-example" data-quiz-example></p>
+
+      <form class="form" data-quiz-form>
+        <label class="field">
+          <span>Your answer</span>
+          <input type="text" data-quiz-answer required />
+        </label>
+        <p class="form-hint" data-quiz-feedback></p>
+        <div class="list-actions">
+          <button type="submit">Submit</button>
+          <button type="button" class="btn ghost" data-quiz-next disabled>Next</button>
+        </div>
+      </form>
+    </section>
+  {{/if}}
+</main>
+
+<script>
+  window.__QUIZ_DATA__ = {{{toJson quizData}}};
+</script>
+<script type="module" src="/scripts/quiz.js"></script>
